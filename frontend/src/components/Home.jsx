@@ -3,6 +3,7 @@ import React, { useState } from "react";
 const Home = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [extractedText, setExtractedText] = useState("");
+  const [similarityscore, setsimilarityscore] = useState(0);
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -23,7 +24,9 @@ const Home = () => {
         body: formData,
       });
       const data = await response.json();
+      // console.log(data);
       setExtractedText(data.text); // Update extractedText state with the extracted text
+      setsimilarityscore(data.score);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -35,7 +38,7 @@ const Home = () => {
       <input type="file" onChange={handleFileChange} />
       <button onClick={uploadPDF}>Upload</button>
       {extractedText && <div>{extractedText}</div>}{" "}
-      {/* Display extracted text if available */}
+      {similarityscore && <h1 className="bold ">Similarity Score: {similarityscore}</h1>}
     </div>
   );
 };
