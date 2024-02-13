@@ -151,9 +151,9 @@ const Home = () => {
           className="flex-grow"
         >
           {/* Add options dynamically from skills state */}
-          <Option key="Skill1">Skill1</Option>
+{/*           <Option key="Skill1">Skill1</Option>
           <Option key="Skill2">Skill2</Option>
-          <Option key="Skill3">Skill3</Option>
+          <Option key="Skill3">Skill3</Option> */}
         </Select>
       </div>
       {loading && (
