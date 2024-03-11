@@ -1,6 +1,10 @@
 import React, { useState } from "react";
-import { Upload, Button, Table, Spin, message, Tag , Select } from "antd";
-import { UploadOutlined, TagOutlined, DownloadOutlined } from "@ant-design/icons";
+import { Upload, Button, Table, Spin, message, Tag, Select } from "antd";
+import {
+  UploadOutlined,
+  TagOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -37,7 +41,7 @@ const Home = () => {
       formData.append("resume_files", file.originFileObj); // Use originFileObj to access the file object
     }
     formData.append("job_description", jobDescription);
-    formData.append("skills", JSON.stringify(skills));
+    formData.append("recruiter_skills", JSON.stringify(skills));
 
     try {
       const response = await fetch("http://localhost:8000/extract_and_sort", {
@@ -56,27 +60,29 @@ const Home = () => {
 
   const handleDownload = async (filename) => {
     try {
-      const response = await fetch(`http://localhost:8000/download/${filename}`, {
-        method: 'GET',
-        responseType: 'blob', // Set responseType to 'blob' to handle binary data
-      });
+      const response = await fetch(
+        `http://localhost:8000/download/${filename}`,
+        {
+          method: "GET",
+          responseType: "blob", // Set responseType to 'blob' to handle binary data
+        }
+      );
       if (!response.ok) {
-        throw new Error('Failed to download PDF');
+        throw new Error("Failed to download PDF");
       }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', filename);
+      link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      message.error('Failed to download PDF');
+      console.error("Error downloading PDF:", error);
+      message.error("Failed to download PDF");
     }
   };
-  
 
   const columns = [
     {
@@ -124,11 +130,7 @@ const Home = () => {
         >
           <Button icon={<UploadOutlined />}>Select PDFs</Button>
         </Upload>
-        <Button
-          onClick={uploadPDFs}
-          className="ml-4"
-          loading={loading}
-        >
+        <Button onClick={uploadPDFs} className="ml-4" loading={loading}>
           Upload
         </Button>
       </div>
@@ -144,14 +146,14 @@ const Home = () => {
         <span className="text-lg font-semibold mr-2">Skills:</span>
         <Select
           mode="tags"
-          style={{ width: '50%' }}
+          style={{ width: "50%" }}
           placeholder="Add skills"
           value={skills}
           onChange={handleSkillChange}
           className="flex-grow"
         >
           {/* Add options dynamically from skills state */}
-{/*           <Option key="Skill1">Skill1</Option>
+          {/*           <Option key="Skill1">Skill1</Option>
           <Option key="Skill2">Skill2</Option>
           <Option key="Skill3">Skill3</Option> */}
         </Select>
@@ -164,10 +166,14 @@ const Home = () => {
       {results.length > 0 && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Results:</h2>
-          <Table 
-            dataSource={results} 
-            columns={columns} 
-            pagination={{ ...pagination, total: results.length, onChange: handlePaginationChange }} // Configure pagination
+          <Table
+            dataSource={results}
+            columns={columns}
+            pagination={{
+              ...pagination,
+              total: results.length,
+              onChange: handlePaginationChange,
+            }} // Configure pagination
           />
         </div>
       )}
