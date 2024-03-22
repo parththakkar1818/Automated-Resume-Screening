@@ -34,7 +34,10 @@ def read_root():
 async def extract_and_sort(job_description: str = Form(...), recruiter_skills: str = Form(...), resume_files: List[UploadFile] = File(...)):
     skills_list = json.loads(recruiter_skills)
     # print(recruiter_skills)
-    # print(skills_list)
+    # print("from first")
+    # print(type(skills_list))
+    # print(type(skills_list))
+    
 
     scores = []
 
@@ -64,33 +67,22 @@ async def extract_and_sort(job_description: str = Form(...), recruiter_skills: s
             # Process the temporary file
             parsed_data = resumeparse.read_file(tmp_file_path)
             os.unlink(tmp_file_path)  # Delete the temporary file
-
-            # for key, val in parsed_data.items():
-            #     print(key, ": ", val)
-            # parsed_data = resumeparse.read_file(file)
-            # for key,val in parsed_data.items():
-            #     print(key,": ",val)
-
-            # Extracting skills from PDF and calculating skill match score
-            # print("here only")
-            # print(parsed_data)
-            # print(type(parsed_data))
-            # print(parsed_data["skills"])
-            # print("passed")
-            # print(recruiter_skills)
-            # print("top")
             
-            skill_score = calculate_skill_score(parsed_data["skills"],skills_list)
-            print(similarity)
-            print(skill_score)
+            skill_score_response = calculate_skill_score(parsed_data["skills"],skills_list)
+            skill_score = skill_score_response["skill_score"]
+            matched_skills = skill_score_response["matched_skills"]
+            unmatched_skills = skill_score_response["unmatched_skills"]
+            print("Total responce",skill_score_response)
+            # print("Siilarity score: ",similarity)
+            # print("Skill score: ",skill_score)
             total_score = (similarity + skill_score) /2
-            
 
-            scores.append({"filename": file.filename, "score": total_score, "text":cleaned_text})
+            scores.append({"filename": file.filename, "score": total_score, "text":cleaned_text , "matched_skills": matched_skills, "unmatched_skills": unmatched_skills})
         else:
             return {"error": "Uploaded file is not a PDF"}
 
     sorted_scores = sorted(scores, key=lambda x: x["score"], reverse=True)
+    print("\n\n")
     return sorted_scores
 
 @app.get("/download/{filename}")
@@ -103,15 +95,19 @@ async def download_pdf(filename: str):
         return {"error": "File not found"}
 
 def calculate_skill_score(resume_skills: List[str], recruiter_skills: List[str]) -> float:
-    print(resume_skills)
-    print(recruiter_skills)
+    print("Resume extracted skills: ",resume_skills)
+    print("recruiter_skills: ",recruiter_skills)
     vectorizer = CountVectorizer(vocabulary=recruiter_skills, binary=True)
     resume_skills_text = ' '.join(resume_skills)
     resume_skills_vector = vectorizer.transform([resume_skills_text])
     recruiter_skills_vector = vectorizer.transform(recruiter_skills)
     similarity = cosine_similarity(resume_skills_vector, recruiter_skills_vector)[0]
     skill_score = sum(similarity) / len(similarity)
-    return skill_score
+    
+    matched_skills = [skill for skill, score in zip(recruiter_skills, similarity) if score > 0]
+    unmatched_skills = [skill for skill, score in zip(recruiter_skills, similarity) if score == 0]
+    print("from function: ",matched_skills)
+    return {"skill_score":skill_score, "matched_skills":matched_skills, "unmatched_skills": unmatched_skills}
 
 # def calculate_skill_score(text: str, skills: List[str]) -> float:
 #     # print(text)
