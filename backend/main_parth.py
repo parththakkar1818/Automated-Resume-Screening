@@ -1,8 +1,3 @@
-# pip install resume-parser
-# pip install nltk
-# pip install spacy==2.3.5
-# pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.3.1/en_core_web_sm-2.3.1.tar.gz
-
 from fastapi import FastAPI, UploadFile, File, Form, Response
 from PyPDF2 import PdfReader
 from io import BytesIO
@@ -31,15 +26,18 @@ app.add_middleware(
 
 model = SentenceTransformer("all-mpnet-base-v2")
 
-@app.get("/ok")
+@app.get("/")
 def read_root():
     return {"Hello": "World18"}
 
 @app.post("/extract_and_sort")
-async def extract_and_sort(job_description: str = Form(...), skills: str = Form(...), resume_files: List[UploadFile] = File(...)):
-    skills_list = json.loads(skills)
-    # print(skills)
-    # print(skills_list)
+async def extract_and_sort(job_description: str = Form(...), recruiter_skills: str = Form(...), resume_files: List[UploadFile] = File(...)):
+    skills_list = json.loads(recruiter_skills)
+    # print(recruiter_skills)
+    # print("from first")
+    # print(type(skills_list))
+    # print(type(skills_list))
+    
 
     scores = []
 
@@ -69,24 +67,22 @@ async def extract_and_sort(job_description: str = Form(...), skills: str = Form(
             # Process the temporary file
             parsed_data = resumeparse.read_file(tmp_file_path)
             os.unlink(tmp_file_path)  # Delete the temporary file
-
-            for key, val in parsed_data.items():
-                print(key, ": ", val)
-            # parsed_data = resumeparse.read_file(file)
-            # for key,val in parsed_data.items():
-            #     print(key,": ",val)
-
-            # Extracting skills from PDF and calculating skill match score
-            skill_score = calculate_skill_score(parsed_data[skills],skills_list)
-
-            total_score = (similarity + skill_score) /2
             
+            skill_score_response = calculate_skill_score(parsed_data["skills"],skills_list)
+            skill_score = skill_score_response["skill_score"]
+            matched_skills = skill_score_response["matched_skills"]
+            unmatched_skills = skill_score_response["unmatched_skills"]
+            print("Total responce",skill_score_response)
+            # print("Siilarity score: ",similarity)
+            # print("Skill score: ",skill_score)
+            total_score = ((similarity + skill_score) /2).round(3)
 
-            scores.append({"filename": file.filename, "score": total_score, "text":cleaned_text})
+            scores.append({"filename": file.filename, "score": total_score, "text":cleaned_text , "matched_skills": matched_skills, "unmatched_skills": unmatched_skills, "all_skills":parsed_data["skills"]})
         else:
             return {"error": "Uploaded file is not a PDF"}
 
     sorted_scores = sorted(scores, key=lambda x: x["score"], reverse=True)
+    print("\n\n")
     return sorted_scores
 
 @app.get("/download/{filename}")
@@ -99,15 +95,26 @@ async def download_pdf(filename: str):
         return {"error": "File not found"}
 
 def calculate_skill_score(resume_skills: List[str], recruiter_skills: List[str]) -> float:
-    print(resume_skills)
-    print(recruiter_skills)
+    # print("Resume extracted skills: ",resume_skills)
+    # print("recruiter_skills: ",recruiter_skills)
     vectorizer = CountVectorizer(vocabulary=recruiter_skills, binary=True)
     resume_skills_text = ' '.join(resume_skills)
     resume_skills_vector = vectorizer.transform([resume_skills_text])
     recruiter_skills_vector = vectorizer.transform(recruiter_skills)
+    print("BOth vector: ")
+    print(resume_skills_vector)
+    print("done")
+    print(recruiter_skills_vector)
     similarity = cosine_similarity(resume_skills_vector, recruiter_skills_vector)[0]
+    print("Similarity",similarity)
+    print("similarity 0th element: ",similarity[0])
     skill_score = sum(similarity) / len(similarity)
-    return skill_score
+    
+    matched_skills = [skill for skill, score in zip(resume_skills, similarity) if score > 0.6]
+    unmatched_skills = [skill for skill, score in zip(resume_skills, similarity) if score == 0]
+    
+    print("from function: ",matched_skills)
+    return {"skill_score":skill_score, "matched_skills":matched_skills, "unmatched_skills": unmatched_skills}
 
 # def calculate_skill_score(text: str, skills: List[str]) -> float:
 #     # print(text)
