@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useRef,useEffect} from "react";
 import {
   Upload,
   Button,
@@ -9,13 +9,18 @@ import {
   Select,
   Collapse,
   Progress,
+  Tooltip,
+  Input,
+  Tour
 } from "antd";
 import {
   UploadOutlined,
   TagOutlined,
   DownloadOutlined,
+  MailTwoTone,
+  OrderedListOutlined,
 } from "@ant-design/icons";
-
+const { TextArea } = Input;
 const { Option } = Select;
 const { Panel } = Collapse;
 
@@ -29,7 +34,41 @@ const Home = () => {
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [allFiles, setAllFiles] = useState([]);
   const [allMails, setAllMails] = useState([]);
+  const [open, setOpen] = useState(false);
+
   
+
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const ref4 = useRef(null);
+
+  const steps = [
+    {
+      title: "Job Description",
+      description: "Enter job description here",
+      target: () => ref1.current,
+      nextButtonProps: {type:"dashed" ,children:"Next"}
+    },
+    {
+      title: "Skills",
+      description: "Add required skills here",
+      target: () => ref2.current,
+      nextButtonProps: {type:"dashed" ,children:"Next"}
+    },
+    {
+      title: "Select PDFs",
+      description: "Click here to select PDF files",
+      target: () => ref3.current,
+      nextButtonProps: {type:"dashed" ,children:"Next"}
+    },
+    {
+      title: "Upload",
+      description: "Upload selected files",
+      target: () => ref4.current,
+      nextButtonProps: {type:"dashed" ,children:"Finish"}
+    },
+  ];
 
   const handleFileChange = (info) => {
     setSelectedFiles(info.fileList);
@@ -215,8 +254,12 @@ const Home = () => {
       <h1 className="text-5xl font-serif bg-orange-200 p-2 mb-8 text-center">
         Automated Resume Screening
       </h1>
+      {/* <Button onClick={() => setOpen(true)}>
+        Begin Tour
+      </Button> */}
       <div className="flex justify-center items-center mb-4">
         <Upload
+          
           multiple
           onChange={handleFileChange}
           fileList={selectedFiles}
@@ -224,35 +267,46 @@ const Home = () => {
           customRequest={() => {}}
           beforeUpload={() => false}
         >
-          <Button icon={<UploadOutlined />}>Select PDFs</Button>
+          <Button icon={<UploadOutlined />} ref={ref3}>Select PDFs</Button>
         </Upload>
-        <Button onClick={uploadPDFs} className="ml-4" loading={loading}>
+        <Button ref={ref4} onClick={uploadPDFs} className="ml-4" loading={loading} >
           Upload
         </Button>
       </div>
-      <div className="flex justify-center items-center mb-4">
-        <input
-          className="p-2 border border-gray-300 rounded mr-2"
-          type="text"
-          placeholder="Enter job description"
-          value={jobDescription}
-          onChange={handleJobDescriptionChange}
-        />
-        <TagOutlined className="text-xl text-gray-500 mr-2" />
-        <span className="text-lg font-semibold mr-2">Skills:</span>
-        <Select
-          mode="tags"
-          style={{ width: "10%" }}
-          placeholder="Add skills"
-          value={skills}
-          onChange={handleSkillChange}
-          className="flex-grow"
-        >
-          {/* Add options dynamically from skills state */}
-          {/* <Option key="Skill1">Skill1</Option>
-          <Option key="Skill2">Skill2</Option>
-          <Option key="Skill3">Skill3</Option> */}
-        </Select>
+      <div className="flex items-center mb-4 space-x-4">
+        <div ref={ref1} className="w-3/5">
+
+          <TextArea
+            // ref={ref1}
+            title="Job  Description"
+            className="border border-gray-300 rounded"
+            type="text"
+            placeholder="Enter job description"
+            value={jobDescription}
+            onChange={handleJobDescriptionChange}
+            rows={10}
+          />
+        </div>
+
+        <div ref={ref2} className="w-2/5">
+
+          <OrderedListOutlined className="text-xl text-gray-500 mr-2" />
+          <span className="text-lg font-semibold mr-2" >Skills:</span>
+          <Select
+            
+            mode="tags"
+            style={{ width: "80%" }}
+            placeholder="Add skills"
+            value={skills}
+            onChange={handleSkillChange}
+            className="flex-grow"
+          >
+            {/* Add options dynamically from skills state */}
+            {/* <Option key="Skill1">Skill1</Option>
+            <Option key="Skill2">Skill2</Option>
+            <Option key="Skill3">Skill3</Option> */}
+          </Select>
+        </div>
       </div>
       {loading && (
         <div className="mt-8 text-center">
@@ -261,9 +315,29 @@ const Home = () => {
       )}
       {results.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Results:</h2>
-          <button onClick={handleDownloadAll}>Download all</button>
-          <button onClick={sendMail}>Send mail</button>
+          <h2 className="text-2xl font-bold mb-4 flex justify-center">
+            Results
+          </h2>
+          {/* <Button onClick={uploadPDFs} className="ml-4" loading={loading}>
+          Upload
+          </Button> */}
+          {/* <button onClick={handleDownloadAll}>Download all</button> */}
+          <div className="mb-9 mt-5 flex justify-center items-center">
+            <Button onClick={handleDownloadAll} className="mr-5 ">
+              <Tooltip title="Download all best suited Resumes">
+
+                <DownloadOutlined className=" align-middle mb-1 mr-2"/>
+                Download All
+              </Tooltip>
+            </Button>
+            <Button onClick={sendMail} className="">
+            <Tooltip title="Mail selected candidates">
+
+              <MailTwoTone className=" align-middle mb-1 mr-2" />
+              Send Mail
+            </Tooltip>
+            </Button>
+          </div>
           <Table
             dataSource={results}
             columns={columns}
@@ -296,6 +370,11 @@ const Home = () => {
           />
         </div>
       )}
+      <Tour
+        steps={steps}
+        isOpen={open}
+        onRequestClose={() => setOpen(false)}
+      />
     </div>
   );
 };
