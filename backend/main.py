@@ -40,13 +40,13 @@ def read_root():
     return {"Hello": "World18"}
 
 @app.post("/extract_and_sort")
-async def extract_and_sort(job_description: str = Form(...), recruiter_skills: str = Form(...), resume_files: List[UploadFile] = File(...)):
+async def extract_and_sort(job_description: str = Form(...), recruiter_skills: str = Form(...),num_candidates: int = Form(...), resume_files: List[UploadFile] = File(...)):
     recruiter_skills = json.loads(recruiter_skills)
     # print(recruiter_skills)
     # print("from first")
     # print(type(skills_list))
     # print(type(skills_list))
-    
+    print(num_candidates)
 
     scores = []
     all_files=[]
