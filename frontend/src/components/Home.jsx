@@ -37,6 +37,7 @@ const Home = () => {
   const [allFiles, setAllFiles] = useState([]);
   const [allMails, setAllMails] = useState([]);
   const [open, setOpen] = useState(false);
+  const [numCandidates, setNumCandidates] = useState(1); // Initialize with default value
 
   
 
@@ -91,6 +92,10 @@ const Home = () => {
     setSkills(value);
   };
 
+  const handleNumCandidatesChange = (value) => {
+    setNumCandidates(value);
+  };
+  
   const handleExpand = (expanded, record) => {
     const expandedKeys = expanded
       ? [record.key]
@@ -112,7 +117,9 @@ const Home = () => {
     }
     formData.append("job_description", jobDescription);
     formData.append("recruiter_skills", JSON.stringify(skills));
-
+    formData.append("num_candidates", numCandidates);
+    console.log(numCandidates);
+    
     try {
       const response = await fetch("http://localhost:8000/extract_and_sort", {
         method: "POST",
@@ -314,7 +321,7 @@ const Home = () => {
       <div ref={ref3} className="flex mt-6 text-lg font-semibold mr-2 items-center justify-center mx-auto">
         <NumberOutlined className="mr-2" />
         <span className="mr-2">Number of candidates: </span>  
-        <InputNumber min={1} defaultValue={1}/>
+        <InputNumber min={1} defaultValue={1} onChange={handleNumCandidatesChange} />
       </div>
       {loading && (
         <div className="mt-8 text-center">
