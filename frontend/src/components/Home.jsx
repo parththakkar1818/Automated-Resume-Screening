@@ -11,6 +11,7 @@ import {
   Progress,
   Tooltip,
   Input,
+  InputNumber,
   Tour
 } from "antd";
 import {
@@ -19,6 +20,7 @@ import {
   DownloadOutlined,
   MailTwoTone,
   OrderedListOutlined,
+  NumberOutlined,
 } from "@ant-design/icons";
 const { TextArea } = Input;
 const { Option } = Select;
@@ -42,6 +44,7 @@ const Home = () => {
   const ref2 = useRef(null);
   const ref3 = useRef(null);
   const ref4 = useRef(null);
+  const ref5 = useRef(null);
 
   const steps = [
     {
@@ -57,15 +60,21 @@ const Home = () => {
       nextButtonProps: {type:"dashed" ,children:"Next"}
     },
     {
+      title: "Number of Candidates",
+      description: "Enter number of candidates here",
+      target: () => ref3.current,
+      nextButtonProps: {type:"dashed" ,children:"Next"}
+    },
+    {
       title: "Select PDFs",
       description: "Click here to select PDF files",
-      target: () => ref3.current,
+      target: () => ref4.current,
       nextButtonProps: {type:"dashed" ,children:"Next"}
     },
     {
       title: "Upload",
       description: "Upload selected files",
-      target: () => ref4.current,
+      target: () => ref5.current,
       nextButtonProps: {type:"dashed" ,children:"Finish"}
     },
   ];
@@ -199,8 +208,6 @@ const Home = () => {
 
   }
   const renderSkills = (matchedSkills, unmatchedSkills) => {
-    // console.log("from here matched: ", matchedSkills);
-    // console.log("from here unmatched : ", matchedSkills);
 
     return (
       <div>
@@ -267,9 +274,9 @@ const Home = () => {
           customRequest={() => {}}
           beforeUpload={() => false}
         >
-          <Button icon={<UploadOutlined />} ref={ref3}>Select PDFs</Button>
+          <Button icon={<UploadOutlined />} ref={ref4}>Select PDFs</Button>
         </Upload>
-        <Button ref={ref4} onClick={uploadPDFs} className="ml-4" loading={loading} >
+        <Button ref={ref5} onClick={uploadPDFs} className="ml-4" loading={loading} >
           Upload
         </Button>
       </div>
@@ -290,7 +297,7 @@ const Home = () => {
 
         <div ref={ref2} className="w-2/5">
 
-          <OrderedListOutlined className="text-xl text-gray-500 mr-2" />
+          <OrderedListOutlined className="text-xl mr-2" />
           <span className="text-lg font-semibold mr-2" >Skills:</span>
           <Select
             
@@ -301,12 +308,13 @@ const Home = () => {
             onChange={handleSkillChange}
             className="flex-grow"
           >
-            {/* Add options dynamically from skills state */}
-            {/* <Option key="Skill1">Skill1</Option>
-            <Option key="Skill2">Skill2</Option>
-            <Option key="Skill3">Skill3</Option> */}
           </Select>
         </div>
+      </div>
+      <div ref={ref3} className="flex mt-6 text-lg font-semibold mr-2 items-center justify-center mx-auto">
+        <NumberOutlined className="mr-2" />
+        <span className="mr-2">Number of candidates: </span>  
+        <InputNumber min={1} defaultValue={1}/>
       </div>
       {loading && (
         <div className="mt-8 text-center">
