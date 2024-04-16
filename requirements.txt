@@ -1,0 +1,7 @@
+fastapi==0.70.0
+PyPDF2==1.26.0
+sentence-transformers==2.1.0
+spacy==3.2.1
+scikit-learn==0.24.2
+resume-parser==1.0.6
+fuzzywuzzy==0.18.0
